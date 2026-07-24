@@ -1,6 +1,7 @@
 const GHL_API_KEY = 'pit-fded271c-8ced-4512-8937-996080e7e983';
 const GHL_LOCATION_ID = 'dtz4paUuHKyFF70FM0Jo';
 const GHL_PIPELINE_NAME = 'Clientes Linkedin Rockstars';
+const GHL_STAGE_NAME = 'Raio X Recebido';
 
 exports.handler = async function(event) {
   const headers = {
@@ -23,20 +24,10 @@ exports.handler = async function(event) {
     const firstName = nameParts[0] || 'Sem nome';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    // Formata telefone: remove tudo exceto números e adiciona +55
     const rawPhone = (data.whatsapp || '').replace(/\D/g, '');
     const phone = rawPhone.startsWith('55') ? '+' + rawPhone : '+55' + rawPhone;
 
     // 1. Criar contato
-    const contactPayload = {
-      locationId: GHL_LOCATION_ID,
-      firstName,
-      lastName,
-      email: data.email || '',
-      phone,
-      city: data.cidade || ''
-    };
-
     const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
@@ -44,21 +35,23 @@ exports.handler = async function(event) {
         'Content-Type': 'application/json',
         'Version': '2021-07-28'
       },
-      body: JSON.stringify(contactPayload)
+      body: JSON.stringify({
+        locationId: GHL_LOCATION_ID,
+        firstName, lastName,
+        email: data.email || '',
+        phone,
+        city: data.cidade || ''
+      })
     });
 
     const contactJson = await contactRes.json();
     const contactId = contactJson?.contact?.id;
 
     if (!contactId) {
-      return { 
-        statusCode: 400, 
-        headers, 
-        body: JSON.stringify({ error: 'Contato não criado', detail: contactJson, payload: contactPayload }) 
-      };
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Contato não criado', detail: contactJson }) };
     }
 
-    // 2. Adicionar nota com todas as respostas
+    // 2. Adicionar nota
     await fetch('https://services.leadconnectorhq.com/contacts/' + contactId + '/notes', {
       method: 'POST',
       headers: {
@@ -69,19 +62,18 @@ exports.handler = async function(event) {
       body: JSON.stringify({ body: buildNotes(data) })
     });
 
-    // 3. Buscar pipelines
+    // 3. Buscar pipeline e estágio correto
     const pipRes = await fetch('https://services.leadconnectorhq.com/opportunities/pipelines?locationId=' + GHL_LOCATION_ID, {
-      headers: { 
-        'Authorization': 'Bearer ' + GHL_API_KEY, 
-        'Version': '2021-07-28' 
-      }
+      headers: { 'Authorization': 'Bearer ' + GHL_API_KEY, 'Version': '2021-07-28' }
     });
     const pipJson = await pipRes.json();
     const pipeline = (pipJson.pipelines || []).find(p => p.name === GHL_PIPELINE_NAME);
 
-    // 4. Criar oportunidade
+    // 4. Criar oportunidade no estágio correto
     if (pipeline) {
-      const stageId = pipeline.stages?.[0]?.id;
+      const stage = (pipeline.stages || []).find(s => s.name === GHL_STAGE_NAME) || pipeline.stages?.[0];
+      const stageId = stage?.id;
+
       await fetch('https://services.leadconnectorhq.com/opportunities/', {
         method: 'POST',
         headers: {
