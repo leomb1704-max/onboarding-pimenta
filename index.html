@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Onboarding – Pimenta Labs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#000;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;}
+.fw{min-height:100vh;background:#000;display:flex;flex-direction:column;position:relative;}
+.prog-bg{position:fixed;top:0;left:0;right:0;height:3px;background:#1a1a1a;z-index:100;}
+.prog-fill{height:3px;background:#fff;transition:width .4s ease;}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:3rem 2rem;text-align:center;gap:1.1rem;}
+.welcome h1{font-size:clamp(22px,4vw,30px);font-weight:900;line-height:1.35;color:#fff;max-width:520px;}
+.welcome p{font-size:15px;color:#999;line-height:1.8;max-width:460px;}
+.btn-start{margin-top:.75rem;background:#fff;color:#000;font-weight:900;font-size:16px;padding:14px 36px;border:none;cursor:pointer;font-family:'Anton',sans-serif;letter-spacing:.05em;transition:opacity .15s;}
+.btn-start:hover{opacity:.82;}
+.press-hint{font-size:12px;color:#444;}
+.step{display:none;flex-direction:column;justify-content:center;min-height:100vh;padding:4rem 2rem 2rem;max-width:660px;margin:0 auto;width:100%;}
+.step.active{display:flex;animation:fu .3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.step-meta{font-size:12px;color:#444;margin-bottom:.5rem;letter-spacing:.04em;}
+.step-q{font-size:clamp(18px,3vw,22px);font-weight:700;color:#fff;line-height:1.35;margin-bottom:.3rem;}
+.step-hint{font-size:13px;color:#555;margin-bottom:1.1rem;}
+.req{color:#e05;}
+.step input[type=text],.step input[type=email],.step input[type=tel],.step input[type=date]{width:100%;font-size:17px;padding:10px 0;border:none;border-bottom:2px solid #222;background:transparent;color:#fff;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s;}
+.step input:focus{border-bottom-color:#fff;}
+.step input::placeholder{color:#333;}
+.step textarea{width:100%;font-size:15px;padding:10px 0;border:none;border-bottom:2px solid #222;background:transparent;color:#fff;outline:none;resize:none;min-height:80px;font-family:'Inter',sans-serif;transition:border-color .2s;}
+.step textarea:focus{border-bottom-color:#fff;}
+.step textarea::placeholder{color:#333;}
+.opts{display:flex;flex-direction:column;gap:7px;}
+.opt{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #222;background:transparent;color:#bbb;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .15s,color .15s;text-align:left;border-radius:2px;width:100%;}
+.opt:hover{border-color:#666;color:#fff;}
+.opt.sel{border-color:#fff;color:#fff;}
+.opt-k{font-size:10px;font-weight:700;border:1px solid #333;color:#555;padding:2px 5px;border-radius:2px;min-width:20px;text-align:center;flex-shrink:0;}
+.opt.sel .opt-k{border-color:#fff;color:#fff;}
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:1.5rem;}
+.btn-ok{background:#fff;color:#000;font-weight:900;font-size:14px;padding:9px 22px;border:none;cursor:pointer;font-family:'Anton',sans-serif;letter-spacing:.05em;transition:opacity .15s;border-radius:2px;}
+.btn-ok:hover{opacity:.82;}
+.btn-bk{background:transparent;color:#444;border:1px solid #222;font-size:14px;padding:9px 13px;cursor:pointer;font-family:'Inter',sans-serif;border-radius:2px;}
+.btn-bk:hover{border-color:#555;color:#888;}
+.ph{font-size:11px;color:#333;}
+.sc{font-size:11px;color:#333;margin-left:auto;}
+.sec{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#444;margin-bottom:.6rem;}
+.success{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:3rem 2rem;gap:1.25rem;}
+.success.active{display:flex;animation:fu .4s ease;}
+.success h1{font-size:clamp(22px,4vw,30px);font-weight:900;color:#fff;max-width:520px;line-height:1.35;}
+.success p{font-size:15px;color:#999;line-height:1.8;max-width:460px;}
+.btn-suporte{background:transparent;color:#fff;border:2px solid #fff;font-size:15px;font-weight:700;padding:13px 28px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s,color .15s;margin-top:.5rem;}
+.btn-suporte:hover{background:#fff;color:#000;}
+.loading{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+.loading.active{display:flex;}
+.spinner{width:32px;height:32px;border:2px solid #333;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{color:#888;font-size:14px;}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#e05;color:#fff;padding:10px 20px;border-radius:2px;font-size:14px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:300;}
+.toast.show{opacity:1;}
+@media(max-width:500px){.step{padding:5rem 1.25rem 2rem;}.welcome{padding:2rem 1.25rem;}}
+</style>
+</head>
+<body>
+<div class="fw">
+  <div class="prog-bg"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div class="loading" id="loading"><div class="spinner"></div><p>Enviando suas respostas...</p></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="welcome" id="welcome">
+    <svg viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg" style="width:180px;margin-bottom:.25rem;">
+      <text x="4" y="38" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">MARCELO</text>
+      <text x="4" y="82" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">P</text>
+      <polygon points="54,4 38,46 52,46 30,86 70,34 54,34 72,4" fill="#fff"/>
+      <text x="72" y="82" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">MENTA</text>
+    </svg>
+    <h1>Seja muito bem vindo(a) ao Ecossistema do Marcelo Pimenta!</h1>
+    <p>Este é o nosso Raio-X, ou seja, o documento inicial que vai nos ajudar a conhecer melhor o seu negócio.</p>
+    <p>Pedimos que responda com calma e detalhes para melhor aproveitamento da mentoria.</p>
+    <p>No caso de alguma dúvida, fique à vontade para chamar nosso telefone de Suporte <strong style="color:#fff">(11 9.7077–9107)</strong>.</p>
+    <button class="btn-start" onclick="startForm()">Começar &gt;&gt;</button>
+    <span class="press-hint">press Enter ↵</span>
+  </div>
+
+  <div class="step" id="s1"><div class="sec">Dados pessoais</div><div class="step-meta">01 →</div><div class="step-q">Digite seu nome completo <span class="req">*</span></div><input type="text" id="f1" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-ok" onclick="go(2)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">1 / 35</span></div></div>
+  <div class="step" id="s2"><div class="sec">Dados pessoais</div><div class="step-meta">02 →</div><div class="step-q">Seu @ do Instagram</div><div class="step-hint">Caso você use profissionalmente</div><input type="text" id="f2" placeholder="@seuuser"/><div class="btn-row"><button class="btn-bk" onclick="go(1)">↑</button><button class="btn-ok" onclick="go(3)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">2 / 35</span></div></div>
+  <div class="step" id="s3"><div class="sec">Dados pessoais</div><div class="step-meta">03 →</div><div class="step-q">Seu perfil do LinkedIn</div><div class="step-hint">Cole aqui por favor</div><input type="text" id="f3" placeholder="https://linkedin.com/in/..."/><div class="btn-row"><button class="btn-bk" onclick="go(2)">↑</button><button class="btn-ok" onclick="go(4)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">3 / 35</span></div></div>
+  <div class="step" id="s4"><div class="sec">Dados pessoais</div><div class="step-meta">04 →</div><div class="step-q">Seu WhatsApp com DDD <span class="req">*</span></div><input type="tel" id="f4" placeholder="(11) 99999-9999"/><div class="btn-row"><button class="btn-bk" onclick="go(3)">↑</button><button class="btn-ok" onclick="go(5)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">4 / 35</span></div></div>
+  <div class="step" id="s5"><div class="sec">Dados pessoais</div><div class="step-meta">05 →</div><div class="step-q">Seu e-mail <span class="req">*</span></div><div class="step-hint">Precisa ser o mesmo cadastrado na Eduzz</div><input type="email" id="f5" placeholder="seu@email.com"/><div class="btn-row"><button class="btn-bk" onclick="go(4)">↑</button><button class="btn-ok" onclick="go(6)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">5 / 35</span></div></div>
+  <div class="step" id="s6"><div class="sec">Dados pessoais</div><div class="step-meta">06 →</div><div class="step-q">Data de nascimento <span class="req">*</span></div><input type="date" id="f6" style="color:#fff;padding-bottom:10px;"/><div class="btn-row"><button class="btn-bk" onclick="go(5)">↑</button><button class="btn-ok" onclick="go(7)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">6 / 35</span></div></div>
+  <div class="step" id="s7"><div class="sec">Dados pessoais</div><div class="step-meta">07 →</div><div class="step-q">Qual é a sua cidade? <span class="req">*</span></div><input type="text" id="f7" placeholder="Ex: São Paulo - SP"/><div class="btn-row"><button class="btn-bk" onclick="go(6)">↑</button><button class="btn-ok" onclick="go(8)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">7 / 35</span></div></div>
+
+  <div class="step" id="s8"><div class="sec">Sobre a mentoria</div><div class="step-meta">08 →</div><div class="step-q">Como você chegou até a mentoria? <span class="req">*</span></div><div class="opts" id="o8"><button class="opt" onclick="sel('o8',this,'v8','Vi um anúncio do Pimenta')"><span class="opt-k">A</span> Vi um anúncio do Pimenta</button><button class="opt" onclick="sel('o8',this,'v8','LinkedIn do Pimenta')"><span class="opt-k">B</span> LinkedIn do Pimenta</button><button class="opt" onclick="sel('o8',this,'v8','Instagram do Pimenta')"><span class="opt-k">C</span> Instagram do Pimenta</button><button class="opt" onclick="sel('o8',this,'v8','YouTube do Pimenta')"><span class="opt-k">D</span> YouTube do Pimenta</button><button class="opt" onclick="sel('o8',this,'v8','Já conhecia o Pimenta pela StartSe')"><span class="opt-k">E</span> Já conhecia o Pimenta pela StartSe</button><button class="opt" onclick="sel('o8',this,'v8','Indicação')"><span class="opt-k">F</span> Indicação</button><button class="opt" onclick="sel('o8',this,'v8','Outro')"><span class="opt-k">G</span> Outro</button></div><input type="hidden" id="v8"/><div class="btn-row"><button class="btn-bk" onclick="go(7)">↑</button><button class="btn-ok" onclick="go(9)">OK ✓</button><span class="sc">8 / 35</span></div></div>
+
+  <div class="step" id="s9"><div class="sec">Sobre a mentoria</div><div class="step-meta">09 →</div><div class="step-q">O que melhor lhe descreve? <span class="req">*</span></div><div class="opts" id="o9"><button class="opt" onclick="sel('o9',this,'v9','Sou empresário(a) B2B')"><span class="opt-k">A</span> Sou empresário(a) B2B</button><button class="opt" onclick="sel('o9',this,'v9','Sou empresário(a) B2C')"><span class="opt-k">B</span> Sou empresário(a) B2C</button><button class="opt" onclick="sel('o9',this,'v9','Sou dono(a) de consultoria')"><span class="opt-k">C</span> Sou dono(a) de consultoria</button><button class="opt" onclick="sel('o9',this,'v9','Sou dono(a) de agência ou coprodutor')"><span class="opt-k">D</span> Sou dono(a) de agência ou coprodutor</button><button class="opt" onclick="sel('o9',this,'v9','Sou mentor, expert ou infoprodutor(a)')"><span class="opt-k">E</span> Sou mentor, expert ou infoprodutor(a)</button><button class="opt" onclick="sel('o9',this,'v9','Sou do mundo físico e estou ingressando no mundo online')"><span class="opt-k">F</span> Sou do mundo físico e estou ingressando no mundo online</button><button class="opt" onclick="sel('o9',this,'v9','Outro')"><span class="opt-k">G</span> Outro</button></div><input type="hidden" id="v9"/><div class="btn-row"><button class="btn-bk" onclick="go(8)">↑</button><button class="btn-ok" onclick="go(10)">OK ✓</button><span class="sc">9 / 35</span></div></div>
+
+  <div class="step" id="s10"><div class="sec">Sobre a mentoria</div><div class="step-meta">10 →</div><div class="step-q">Qual foi o ponto decisivo que te fez entrar na mentoria? <span class="req">*</span></div><textarea id="f10" placeholder="Type your answer here..." rows="3"></textarea><div class="step-hint" style="margin-top:.4rem;font-size:11px;">Shift ⇧ + Enter ↵ To make a line break</div><div class="btn-row"><button class="btn-bk" onclick="go(9)">↑</button><button class="btn-ok" onclick="go(11)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">10 / 35</span></div></div>
+  <div class="step" id="s11"><div class="sec">Seu negócio</div><div class="step-meta">11 →</div><div class="step-q">Qual é o seu nicho e sub-nicho? <span class="req">*</span></div><textarea id="f11" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(10)">↑</button><button class="btn-ok" onclick="go(12)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">11 / 35</span></div></div>
+  <div class="step" id="s12"><div class="sec">Seu negócio</div><div class="step-meta">12 →</div><div class="step-q">Que produtos você vende? (ou serviços)</div><div class="step-hint">Por favor, inclua o ticket médio desses produtos.</div><textarea id="f12" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(11)">↑</button><button class="btn-ok" onclick="go(13)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">12 / 35</span></div></div>
+  <div class="step" id="s13"><div class="sec">Seu negócio</div><div class="step-meta">13 →</div><div class="step-q">Quem é o seu ICP (Perfil de Cliente Ideal)?</div><textarea id="f13" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(12)">↑</button><button class="btn-ok" onclick="go(14)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">13 / 35</span></div></div>
+  <div class="step" id="s14"><div class="sec">Seu negócio</div><div class="step-meta">14 →</div><div class="step-q">Qual é o grande problema do seu público-alvo?</div><div class="step-hint">Um problema caro que você resolve com a sua solução</div><textarea id="f14" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(13)">↑</button><button class="btn-ok" onclick="go(15)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">14 / 35</span></div></div>
+  <div class="step" id="s15"><div class="sec">Seu negócio</div><div class="step-meta">15 →</div><div class="step-q">Qual é o seu diferencial em relação aos concorrentes?</div><textarea id="f15" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(14)">↑</button><button class="btn-ok" onclick="go(16)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">15 / 35</span></div></div>
+  <div class="step" id="s16"><div class="sec">Seu negócio</div><div class="step-meta">16 →</div><div class="step-q">Quais são os resultados que você promete para seus clientes?</div><textarea id="f16" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(15)">↑</button><button class="btn-ok" onclick="go(17)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">16 / 35</span></div></div>
+  <div class="step" id="s17"><div class="sec">Seu negócio</div><div class="step-meta">17 →</div><div class="step-q">Você já tem provas ou cases de sucesso?</div><div class="step-hint">Me fale mais sobre isso...</div><textarea id="f17" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(16)">↑</button><button class="btn-ok" onclick="go(18)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">17 / 35</span></div></div>
+
+  <div class="step" id="s18"><div class="sec">Seu negócio</div><div class="step-meta">18 →</div><div class="step-q">Como é seu posicionamento hoje em dia?</div><div class="opts" id="o18"><button class="opt" onclick="sel('o18',this,'v18','Mais técnico / científico')"><span class="opt-k">A</span> Mais técnico / científico</button><button class="opt" onclick="sel('o18',this,'v18','Mais popular / descontraído')"><span class="opt-k">B</span> Mais popular / descontraído</button><button class="opt" onclick="sel('o18',this,'v18','Mais aspiracional / luxo')"><span class="opt-k">C</span> Mais aspiracional / luxo</button></div><input type="hidden" id="v18"/><div class="btn-row"><button class="btn-bk" onclick="go(17)">↑</button><button class="btn-ok" onclick="go(19)">OK ✓</button><span class="sc">18 / 35</span></div></div>
+
+  <div class="step" id="s19"><div class="sec">Seu negócio</div><div class="step-meta">19 →</div><div class="step-q">Qual é o nível de consciência do seu mercado?</div><div class="step-hint">As pessoas já conhecem a sua categoria?</div><textarea id="f19" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(18)">↑</button><button class="btn-ok" onclick="go(20)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">19 / 35</span></div></div>
+  <div class="step" id="s20"><div class="sec">Seu negócio</div><div class="step-meta">20 →</div><div class="step-q">Se você tem concorrentes, como eles prometem resultados?</div><textarea id="f20" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(19)">↑</button><button class="btn-ok" onclick="go(21)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">20 / 35</span></div></div>
+
+  <div class="step" id="s21"><div class="sec">Financeiro</div><div class="step-meta">21 →</div><div class="step-q">Qual a sua média de faturamento MENSAL nos últimos 3 meses? <span class="req">*</span></div><div class="opts" id="o21"><button class="opt" onclick="sel('o21',this,'v21','Até R$5.000')"><span class="opt-k">A</span> Até R$5.000</button><button class="opt" onclick="sel('o21',this,'v21','R$5.000 a R$15.000')"><span class="opt-k">B</span> R$5.000 a R$15.000</button><button class="opt" onclick="sel('o21',this,'v21','R$15.000 a R$30.000')"><span class="opt-k">C</span> R$15.000 a R$30.000</button><button class="opt" onclick="sel('o21',this,'v21','R$30.000 a R$50.000')"><span class="opt-k">D</span> R$30.000 a R$50.000</button><button class="opt" onclick="sel('o21',this,'v21','R$50.000 a R$100.000')"><span class="opt-k">E</span> R$50.000 a R$100.000</button><button class="opt" onclick="sel('o21',this,'v21','R$100.000 a R$200.000')"><span class="opt-k">F</span> R$100.000 a R$200.000</button><button class="opt" onclick="sel('o21',this,'v21','R$200.000 a R$500.000')"><span class="opt-k">G</span> R$200.000 a R$500.000</button><button class="opt" onclick="sel('o21',this,'v21','Acima de R$500.000')"><span class="opt-k">H</span> Acima de R$500.000</button></div><input type="hidden" id="v21"/><div class="btn-row"><button class="btn-bk" onclick="go(20)">↑</button><button class="btn-ok" onclick="go(22)">OK ✓</button><span class="sc">21 / 35</span></div></div>
+
+  <div class="step" id="s22"><div class="sec">Financeiro</div><div class="step-meta">22 →</div><div class="step-q">Qual CENÁRIO mais se adequa ao seu caso? <span class="req">*</span></div><div class="opts" id="o22"><button class="opt" onclick="sel('o22',this,'v22','Não tem audiência')"><span class="opt-k">A</span> Não tem audiência</button><button class="opt" onclick="sel('o22',this,'v22','Tem audiência no LinkedIn')"><span class="opt-k">B</span> Tem audiência no LinkedIn</button><button class="opt" onclick="sel('o22',this,'v22','Tem audiência no YouTube')"><span class="opt-k">C</span> Tem audiência no YouTube</button><button class="opt" onclick="sel('o22',this,'v22','Tem audiência no Instagram')"><span class="opt-k">D</span> Tem audiência no Instagram</button><button class="opt" onclick="sel('o22',this,'v22','Tem alunos para ascender / fazer Upsell')"><span class="opt-k">E</span> Tem alunos para ascender / fazer Upsell</button></div><input type="hidden" id="v22"/><div class="btn-row"><button class="btn-bk" onclick="go(21)">↑</button><button class="btn-ok" onclick="go(23)">OK ✓</button><span class="sc">22 / 35</span></div></div>
+
+  <div class="step" id="s23"><div class="sec">Vendas</div><div class="step-meta">23 →</div><div class="step-q">Em qual área você sente mais dificuldade hoje? <span class="req">*</span></div><div class="opts" id="o23"><button class="opt" onclick="sel('o23',this,'v23','Gerar reuniões quentes e qualificadas')"><span class="opt-k">A</span> Gerar reuniões quentes e qualificadas</button><button class="opt" onclick="sel('o23',this,'v23','Posicionamento (definir seu diferencial)')"><span class="opt-k">B</span> Posicionamento (definir seu diferencial)</button><button class="opt" onclick="sel('o23',this,'v23','Criar boas ofertas')"><span class="opt-k">C</span> Criar boas ofertas</button><button class="opt" onclick="sel('o23',this,'v23','Criar conteúdo')"><span class="opt-k">D</span> Criar conteúdo</button><button class="opt" onclick="sel('o23',this,'v23','Esteira de produtos')"><span class="opt-k">E</span> Esteira de produtos</button><button class="opt" onclick="sel('o23',this,'v23','Processo de vendas (condução da call, scripts, etc.)')"><span class="opt-k">F</span> Processo de vendas (condução da call, scripts, etc.)</button><button class="opt" onclick="sel('o23',this,'v23','Time comercial')"><span class="opt-k">G</span> Time comercial</button><button class="opt" onclick="sel('o23',this,'v23','Entrega escalável')"><span class="opt-k">H</span> Entrega escalável</button><button class="opt" onclick="sel('o23',this,'v23','Gestão e métricas')"><span class="opt-k">I</span> Gestão e métricas</button><button class="opt" onclick="sel('o23',this,'v23','Outro')"><span class="opt-k">J</span> Outro</button></div><input type="hidden" id="v23"/><div class="btn-row"><button class="btn-bk" onclick="go(22)">↑</button><button class="btn-ok" onclick="go(24)">OK ✓</button><span class="sc">23 / 35</span></div></div>
+
+  <div class="step" id="s24"><div class="sec">Vendas</div><div class="step-meta">24 →</div><div class="step-q">Você tem equipe comercial? Ou você mesmo faz suas vendas?</div><div class="opts" id="o24"><button class="opt" onclick="sel('o24',this,'v24','Sim, tenho equipe comercial')"><span class="opt-k">A</span> Sim, tenho equipe comercial</button><button class="opt" onclick="sel('o24',this,'v24','Não, faço minhas próprias vendas')"><span class="opt-k">B</span> Não, faço minhas próprias vendas</button></div><input type="hidden" id="v24"/><div class="btn-row"><button class="btn-bk" onclick="go(23)">↑</button><button class="btn-ok" onclick="go(25)">OK ✓</button><span class="sc">24 / 35</span></div></div>
+
+  <div class="step" id="s25"><div class="sec">Vendas</div><div class="step-meta">25 →</div><div class="step-q">Quantas reuniões de vendas você faz por mês, em média?</div><input type="text" id="f25" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(24)">↑</button><button class="btn-ok" onclick="go(26)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">25 / 35</span></div></div>
+  <div class="step" id="s26"><div class="sec">Vendas</div><div class="step-meta">26 →</div><div class="step-q">E quantas reuniões por mês você gostaria de alcançar?</div><input type="text" id="f26" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(25)">↑</button><button class="btn-ok" onclick="go(27)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">26 / 35</span></div></div>
+  <div class="step" id="s27"><div class="sec">Marketing</div><div class="step-meta">27 →</div><div class="step-q">Quais são os funis (ou estratégias) de vendas que você usa hoje?</div><textarea id="f27" placeholder="Type your answer here..." rows="3"></textarea><div class="btn-row"><button class="btn-bk" onclick="go(26)">↑</button><button class="btn-ok" onclick="go(28)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">27 / 35</span></div></div>
+  <div class="step" id="s28"><div class="sec">Marketing</div><div class="step-meta">28 →</div><div class="step-q">Quanto você investe por mês em Marketing Digital?</div><div class="step-hint">EXCLUINDO TRÁFEGO PAGO</div><input type="text" id="f28" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(27)">↑</button><button class="btn-ok" onclick="go(29)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">28 / 35</span></div></div>
+  <div class="step" id="s29"><div class="sec">Marketing</div><div class="step-meta">29 →</div><div class="step-q">E quanto você investe por mês EXCLUSIVAMENTE em tráfego pago?</div><div class="step-hint">Se não investir, pode pular</div><input type="text" id="f29" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(28)">↑</button><button class="btn-ok" onclick="go(30)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">29 / 35</span></div></div>
+  <div class="step" id="s30"><div class="sec">Marketing</div><div class="step-meta">30 →</div><div class="step-q">Qual é o seu CUSTO POR LEAD médio?</div><div class="step-hint">Se não souber, pode pular</div><input type="text" id="f30" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(29)">↑</button><button class="btn-ok" onclick="go(31)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">30 / 35</span></div></div>
+  <div class="step" id="s31"><div class="sec">Marketing</div><div class="step-meta">31 →</div><div class="step-q">Qual é o seu CUSTO POR VENDA (CAC ou CPA) médio?</div><div class="step-hint">Se não souber, pode pular</div><input type="text" id="f31" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(30)">↑</button><button class="btn-ok" onclick="go(32)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">31 / 35</span></div></div>
+  <div class="step" id="s32"><div class="sec">Estrutura</div><div class="step-meta">32 →</div><div class="step-q">Quantos CLIENTES você tem na sua base?</div><div class="step-hint">Se não tiver, pode pular</div><input type="text" id="f32" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(31)">↑</button><button class="btn-ok" onclick="go(33)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">32 / 35</span></div></div>
+  <div class="step" id="s33"><div class="sec">Estrutura</div><div class="step-meta">33 →</div><div class="step-q">Quantos LEADS (excluindo CLIENTES) você tem na sua base?</div><div class="step-hint">Se não tiver, pode pular</div><input type="text" id="f33" placeholder="Type your answer here..."/><div class="btn-row"><button class="btn-bk" onclick="go(32)">↑</button><button class="btn-ok" onclick="go(34)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">33 / 35</span></div></div>
+  <div class="step" id="s34"><div class="sec">Estrutura</div><div class="step-meta">34 →</div><div class="step-q">Você usa CRM? De qual empresa?</div><div class="step-hint">Se não usar, escreva "não uso"</div><input type="text" id="f34" placeholder="Ex: GoHighLevel, HubSpot, RD Station..."/><div class="btn-row"><button class="btn-bk" onclick="go(33)">↑</button><button class="btn-ok" onclick="go(35)">OK ✓</button><span class="ph">press Enter ↵</span><span class="sc">34 / 35</span></div></div>
+
+  <div class="step" id="s35">
+    <div class="sec">Objetivos</div><div class="step-meta">35 →</div>
+    <div class="step-q">Quantas pessoas você tem na sua equipe toda?</div>
+    <input type="text" id="f35a" placeholder="Type your answer here..." style="margin-bottom:1.5rem;"/>
+    <div class="step-q" style="font-size:17px;margin-top:.25rem;">Qual o seu objetivo para os próximos 06 meses com a ajuda do Marcelo Pimenta?</div>
+    <textarea id="f35b" placeholder="Type your answer here..." rows="2" style="margin-bottom:1rem;"></textarea>
+    <div class="step-q" style="font-size:17px;">Qual o PRINCIPAL desafio que você vem enfrentando e gostaria de resolver aqui na mentoria? <span class="req">*</span></div>
+    <textarea id="f35c" placeholder="Type your answer here..." rows="2"></textarea>
+    <div class="btn-row"><button class="btn-bk" onclick="go(34)">↑</button><button class="btn-ok" onclick="submitForm()">Enviar &gt;&gt;</button><span class="ph">press Enter ↵</span><span class="sc">35 / 35</span></div>
+  </div>
+
+  <div class="success" id="succ">
+    <svg viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg" style="width:160px;margin-bottom:.25rem;">
+      <text x="4" y="38" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">MARCELO</text>
+      <text x="4" y="82" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">P</text>
+      <polygon points="54,4 38,46 52,46 30,86 70,34 54,34 72,4" fill="#fff"/>
+      <text x="72" y="82" font-family="Anton,sans-serif" font-size="36" fill="#fff" letter-spacing="1">MENTA</text>
+    </svg>
+    <h1>Obrigado por completar o onboarding.</h1>
+    <p>Esse documento será usado como o "marco zero" do seu processo conosco. Caso tenha interesse, pode enviar uma mensagem no WhatsApp do Suporte para solicitar o que precisar.</p>
+    <button class="btn-suporte" onclick="window.open('https://wa.me/5511970779107','_blank')">Enviar mensagem para o Suporte</button>
+    <span class="press-hint" style="font-size:12px;color:#444;">press Enter ↵</span>
+  </div>
+</div>
+
+<script>
+const TOTAL = 35;
+function v(id){ return (document.getElementById(id)||{}).value||''; }
+function startForm(){ document.getElementById('welcome').style.display='none'; go(1); }
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('s'+n);
+  if(el) el.classList.add('active');
+  document.getElementById('prog').style.width=Math.max(Math.round(((n-1)/TOTAL)*100),1)+'%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function sel(gid,btn,vid,val){
+  document.querySelectorAll('#'+gid+' .opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById(vid).value=val;
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+function collectData(){
+  return {
+    nome:v('f1'),instagram:v('f2'),linkedin:v('f3'),whatsapp:v('f4'),email:v('f5'),
+    nascimento:v('f6'),cidade:v('f7'),como_chegou:v('v8'),perfil:v('v9'),
+    ponto_decisivo:v('f10'),nicho:v('f11'),produtos:v('f12'),icp:v('f13'),
+    problema_publico:v('f14'),diferencial:v('f15'),resultados_prometidos:v('f16'),
+    cases:v('f17'),posicionamento:v('v18'),nivel_consciencia:v('f19'),
+    concorrentes:v('f20'),faturamento:v('v21'),cenario:v('v22'),dificuldade:v('v23'),
+    equipe_comercial:v('v24'),reunioes_atuais:v('f25'),reunioes_meta:v('f26'),
+    funis:v('f27'),investimento_mkt:v('f28'),investimento_trafego:v('f29'),
+    custo_lead:v('f30'),custo_venda:v('f31'),base_clientes:v('f32'),
+    base_leads:v('f33'),crm:v('f34'),equipe_total:v('f35a'),
+    objetivo_6meses:v('f35b'),principal_desafio:v('f35c')
+  };
+}
+async function submitForm(){
+  const d=collectData();
+  if(!d.nome){ showToast('Por favor, informe seu nome.'); go(1); return; }
+  if(!d.whatsapp){ showToast('Por favor, informe seu WhatsApp.'); go(4); return; }
+  if(!d.email){ showToast('Por favor, informe seu e-mail.'); go(5); return; }
+  if(!d.principal_desafio){ showToast('Por favor, preencha o principal desafio.'); return; }
+  document.getElementById('loading').classList.add('active');
+  try {
+    const res = await fetch('/.netlify/functions/ghl', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(d)
+    });
+    const json = await res.json();
+    document.getElementById('loading').classList.remove('active');
+    if(json.success){
+      document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+      document.getElementById('succ').classList.add('active');
+      document.getElementById('prog').style.width='100%';
+    } else {
+      showToast('Erro ao enviar. Tente novamente.');
+      console.error(json);
+    }
+  } catch(err){
+    document.getElementById('loading').classList.remove('active');
+    showToast('Erro ao enviar. Tente novamente.');
+    console.error(err);
+  }
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    const w=document.getElementById('welcome');
+    if(w&&w.style.display!=='none'){ startForm(); return; }
+    const a=document.querySelector('.step.active');
+    if(a&&document.activeElement.tagName!=='TEXTAREA'){ const ok=a.querySelector('.btn-ok'); if(ok) ok.click(); }
+    const s=document.getElementById('succ');
+    if(s&&s.classList.contains('active')){ window.open('https://wa.me/5511970779107','_blank'); }
+  }
+});
+</script>
+</body>
+</html>
