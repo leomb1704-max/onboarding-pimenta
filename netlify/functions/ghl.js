@@ -20,14 +20,20 @@ exports.handler = async function(event) {
 
   try {
     const data = JSON.parse(event.body);
+    console.log('=== INICIO ONBOARDING ===');
+    console.log('Nome:', data.nome);
+    console.log('Email:', data.email);
+    console.log('WhatsApp raw:', data.whatsapp);
+
     const nameParts = (data.nome || '').trim().split(' ');
     const firstName = nameParts[0] || 'Sem nome';
     const lastName = nameParts.slice(1).join(' ') || '';
-
     const rawPhone = (data.whatsapp || '').replace(/\D/g, '');
     const phone = rawPhone.startsWith('55') ? '+' + rawPhone : '+55' + rawPhone;
+    console.log('Phone formatado:', phone);
 
     // 1. Criar contato
+    console.log('Criando contato...');
     const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
@@ -45,14 +51,19 @@ exports.handler = async function(event) {
     });
 
     const contactJson = await contactRes.json();
+    console.log('Resposta contato status:', contactRes.status);
+    console.log('Resposta contato:', JSON.stringify(contactJson));
+    
     const contactId = contactJson?.contact?.id;
-
     if (!contactId) {
+      console.log('ERRO: Contato não criado');
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Contato não criado', detail: contactJson }) };
     }
+    console.log('Contato criado! ID:', contactId);
 
-    // 2. Adicionar nota
-    await fetch('https://services.leadconnectorhq.com/contacts/' + contactId + '/notes', {
+    // 2. Nota
+    console.log('Adicionando nota...');
+    const noteRes = await fetch('https://services.leadconnectorhq.com/contacts/' + contactId + '/notes', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + GHL_API_KEY,
@@ -61,40 +72,54 @@ exports.handler = async function(event) {
       },
       body: JSON.stringify({ body: buildNotes(data) })
     });
+    console.log('Nota status:', noteRes.status);
 
-    // 3. Buscar pipeline e estágio correto
+    // 3. Pipelines
+    console.log('Buscando pipelines...');
     const pipRes = await fetch('https://services.leadconnectorhq.com/opportunities/pipelines?locationId=' + GHL_LOCATION_ID, {
       headers: { 'Authorization': 'Bearer ' + GHL_API_KEY, 'Version': '2021-07-28' }
     });
     const pipJson = await pipRes.json();
+    console.log('Pipelines encontrados:', (pipJson.pipelines || []).map(p => p.name).join(', '));
+
     const pipeline = (pipJson.pipelines || []).find(p => p.name === GHL_PIPELINE_NAME);
-
-    // 4. Criar oportunidade no estágio correto
-    if (pipeline) {
-      const stage = (pipeline.stages || []).find(s => s.name === GHL_STAGE_NAME) || pipeline.stages?.[0];
-      const stageId = stage?.id;
-
-      await fetch('https://services.leadconnectorhq.com/opportunities/', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + GHL_API_KEY,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        },
-        body: JSON.stringify({
-          pipelineId: pipeline.id,
-          locationId: GHL_LOCATION_ID,
-          name: data.nome + ' – Onboarding',
-          pipelineStageId: stageId,
-          status: 'open',
-          contactId
-        })
-      });
+    if (!pipeline) {
+      console.log('ERRO: Pipeline não encontrado:', GHL_PIPELINE_NAME);
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, contactId, warning: 'Pipeline não encontrado' }) };
     }
+    console.log('Pipeline encontrado:', pipeline.name, '| ID:', pipeline.id);
+    console.log('Estágios:', (pipeline.stages || []).map(s => s.name).join(', '));
 
+    const stage = (pipeline.stages || []).find(s => s.name === GHL_STAGE_NAME) || pipeline.stages?.[0];
+    console.log('Estágio escolhido:', stage?.name, '| ID:', stage?.id);
+
+    // 4. Oportunidade
+    console.log('Criando oportunidade...');
+    const oppRes = await fetch('https://services.leadconnectorhq.com/opportunities/', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + GHL_API_KEY,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28'
+      },
+      body: JSON.stringify({
+        pipelineId: pipeline.id,
+        locationId: GHL_LOCATION_ID,
+        name: data.nome + ' – Onboarding',
+        pipelineStageId: stage?.id,
+        status: 'open',
+        contactId
+      })
+    });
+    const oppJson = await oppRes.json();
+    console.log('Oportunidade status:', oppRes.status);
+    console.log('Oportunidade resposta:', JSON.stringify(oppJson));
+
+    console.log('=== SUCESSO ===');
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, contactId }) };
 
   } catch (err) {
+    console.log('ERRO GERAL:', err.message);
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
