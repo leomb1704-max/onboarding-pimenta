@@ -3,22 +3,40 @@ const GHL_LOCATION_ID = 'dtz4paUuHKyFF70FM0Jo';
 const GHL_PIPELINE_NAME = 'Clientes Linkedin Rockstars';
 
 exports.handler = async function(event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
   const headers = {
     'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: 'Method Not Allowed' };
+  }
 
   try {
     const data = JSON.parse(event.body);
     const nameParts = (data.nome || '').trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ');
+    const firstName = nameParts[0] || 'Sem nome';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    // Formata telefone: remove tudo exceto números e adiciona +55
+    const rawPhone = (data.whatsapp || '').replace(/\D/g, '');
+    const phone = rawPhone.startsWith('55') ? '+' + rawPhone : '+55' + rawPhone;
 
     // 1. Criar contato
+    const contactPayload = {
+      locationId: GHL_LOCATION_ID,
+      firstName,
+      lastName,
+      email: data.email || '',
+      phone,
+      city: data.cidade || ''
+    };
+
     const contactRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
@@ -26,23 +44,21 @@ exports.handler = async function(event) {
         'Content-Type': 'application/json',
         'Version': '2021-07-28'
       },
-      body: JSON.stringify({
-        locationId: GHL_LOCATION_ID,
-        firstName, lastName,
-        email: data.email,
-        phone: data.whatsapp,
-        city: data.cidade
-      })
+      body: JSON.stringify(contactPayload)
     });
+
     const contactJson = await contactRes.json();
     const contactId = contactJson?.contact?.id;
 
     if (!contactId) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Contato não criado', detail: contactJson }) };
+      return { 
+        statusCode: 400, 
+        headers, 
+        body: JSON.stringify({ error: 'Contato não criado', detail: contactJson, payload: contactPayload }) 
+      };
     }
 
     // 2. Adicionar nota com todas as respostas
-    const notes = buildNotes(data);
     await fetch('https://services.leadconnectorhq.com/contacts/' + contactId + '/notes', {
       method: 'POST',
       headers: {
@@ -50,12 +66,15 @@ exports.handler = async function(event) {
         'Content-Type': 'application/json',
         'Version': '2021-07-28'
       },
-      body: JSON.stringify({ body: notes })
+      body: JSON.stringify({ body: buildNotes(data) })
     });
 
     // 3. Buscar pipelines
     const pipRes = await fetch('https://services.leadconnectorhq.com/opportunities/pipelines?locationId=' + GHL_LOCATION_ID, {
-      headers: { 'Authorization': 'Bearer ' + GHL_API_KEY, 'Version': '2021-07-28' }
+      headers: { 
+        'Authorization': 'Bearer ' + GHL_API_KEY, 
+        'Version': '2021-07-28' 
+      }
     });
     const pipJson = await pipRes.json();
     const pipeline = (pipJson.pipelines || []).find(p => p.name === GHL_PIPELINE_NAME);
